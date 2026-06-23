@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueries } from "@tanstack/react-query";
 import type {
   WorkspaceInfo,
   CollectionTreeNode,
@@ -26,23 +26,23 @@ export function useWorkspaceData() {
 
   const collections = workspaceQuery.data?.collections ?? [];
 
-  const treeQueries = collections.map((col) => {
-    const query = useQuery({
+  const treeQueries = useQueries({
+    queries: collections.map((col) => ({
       queryKey: queryKeys.collectionTree(col.path),
       queryFn: () =>
         apiGet<CollectionTreeNode[]>(`/api/collections/${col.path}/tree`),
       enabled: !!col.path,
-    });
-    return { collection: col, query };
+    })),
   });
 
   useEffect(() => {
-    for (const { collection, query } of treeQueries) {
-      if (query.data) {
-        setTree(collection.path, query.data);
+    collections.forEach((col, i) => {
+      const result = treeQueries[i];
+      if (result?.data) {
+        setTree(col.path, result.data);
       }
-    }
-  }, [treeQueries, setTree]);
+    });
+  }, [treeQueries, collections, setTree]);
 
   return {
     workspace,

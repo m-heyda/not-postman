@@ -39,7 +39,7 @@ export function ClientLayout({
     }
   }, [workspace, selectedRequestPath, setSelectedRequestPath]);
 
-  useLoadRequest(selectedRequestPath);
+  const { isFetching: isRequestFetching } = useLoadRequest(selectedRequestPath);
   const executeMutation = useExecuteRequest();
 
   if (isLoading) {
@@ -66,7 +66,10 @@ export function ClientLayout({
         onNavigateSettings={onNavigateSettings}
         onEditCollection={onEditCollection}
       />
-      <DocumentPanel onSend={() => executeMutation.mutate()} />
+      <DocumentPanel
+        onSend={() => executeMutation.mutate()}
+        isRequestLoading={isRequestFetching}
+      />
     </div>
   );
 }

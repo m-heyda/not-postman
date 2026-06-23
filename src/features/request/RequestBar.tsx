@@ -27,15 +27,20 @@ export function RequestBar({ onSend }: RequestBarProps) {
   const setUrlPath = useRequestStore((s) => s.setUrlPath);
   const activeVariables = useEnvironmentStore((s) => s.activeVariables);
 
-  const resolvedBase = baseUrlVar
-    ? activeVariables[baseUrlVar] ?? ""
-    : "";
+  const query = useRequestStore((s) => s.query);
+  const resolvedBase = baseUrlVar ? activeVariables[baseUrlVar] ?? "" : "";
+
+  const enabledParams = query.filter((r) => r.enabled && r.key.trim());
+  const queryString = enabledParams
+    .map((r) => `${encodeURIComponent(r.key)}=${encodeURIComponent(r.value)}`)
+    .join("&");
+  const fullUrl =
+    resolvedBase + urlPath + (queryString ? `?${queryString}` : "");
   const hasUrl = !!(baseUrlVar || urlPath.trim());
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-0.5">
       <div className="flex items-center gap-0">
-        {/* Method selector */}
         <Select
           value={method}
           onValueChange={(value) => setMethod(value as HttpMethod)}
@@ -61,32 +66,17 @@ export function RequestBar({ onSend }: RequestBarProps) {
           </SelectContent>
         </Select>
 
-        {/* Base URL label (read-only, derived from collection) */}
-        {baseUrlVar && resolvedBase && (
-          <div className="flex items-center border-y bg-muted/40 px-3 h-9 text-xs font-mono text-muted-foreground shrink-0 select-none">
-            <span className="truncate max-w-[220px]" title={resolvedBase}>
-              {resolvedBase}
-            </span>
-          </div>
-        )}
-
-        {/* Path input — just the path portion */}
         <Input
           value={urlPath}
           onChange={(e) => setUrlPath(e.target.value)}
           placeholder="/endpoint"
-          className={cn(
-            "flex-1 rounded-none border-r-0 font-mono text-sm",
-            !baseUrlVar && "rounded-l-none",
-            baseUrlVar && resolvedBase && "border-l-0",
-          )}
+          className="flex-1 rounded-none border-r-0 font-mono text-sm"
           spellCheck={false}
           onKeyDown={(e) => {
             if (e.key === "Enter" && hasUrl && !isLoading) onSend();
           }}
         />
 
-        {/* Send button */}
         <Button
           onClick={onSend}
           disabled={isLoading || !hasUrl}
@@ -101,6 +91,15 @@ export function RequestBar({ onSend }: RequestBarProps) {
           Send
         </Button>
       </div>
+
+      {fullUrl && (
+        <p
+          className="text-[11px] text-muted-foreground font-mono pl-[110px] truncate"
+          title={fullUrl}
+        >
+          {fullUrl}
+        </p>
+      )}
     </div>
   );
 }

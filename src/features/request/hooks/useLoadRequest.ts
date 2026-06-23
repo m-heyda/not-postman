@@ -39,6 +39,7 @@ export function useLoadRequest(requestPath: string | null) {
 
   return {
     isLoading: requestQuery.isLoading,
+    isFetching: requestQuery.isFetching,
     isError: requestQuery.isError,
   };
 }

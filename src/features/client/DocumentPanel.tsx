@@ -1,3 +1,4 @@
+import { Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RequestBar } from "@/features/request/RequestBar";
@@ -12,13 +13,14 @@ import { DocumentToolbar } from "./DocumentToolbar";
 
 interface DocumentPanelProps {
   onSend: () => void;
+  isRequestLoading?: boolean;
 }
 
 function activeCount(rows: { key: string; enabled: boolean }[]): number {
   return rows.filter((r) => r.enabled && r.key.trim()).length;
 }
 
-export function DocumentPanel({ onSend }: DocumentPanelProps) {
+export function DocumentPanel({ onSend, isRequestLoading }: DocumentPanelProps) {
   const response = useRequestStore((s) => s.response);
   const isLoading = useRequestStore((s) => s.isLoading);
   const error = useRequestStore((s) => s.error);
@@ -31,12 +33,24 @@ export function DocumentPanel({ onSend }: DocumentPanelProps) {
   const pathCount = activeCount(path);
   const headerCount = activeCount(headers);
 
-  if (!name) {
+  if (!name && !isRequestLoading) {
     return (
       <div className="flex flex-1 flex-col min-w-0">
         <DocumentToolbar />
         <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
           Select a request from the sidebar to get started.
+        </div>
+      </div>
+    );
+  }
+
+  if (isRequestLoading) {
+    return (
+      <div className="flex flex-1 flex-col min-w-0">
+        <DocumentToolbar />
+        <div className="flex flex-1 items-center justify-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="size-4 animate-spin" />
+          Loading request...
         </div>
       </div>
     );
