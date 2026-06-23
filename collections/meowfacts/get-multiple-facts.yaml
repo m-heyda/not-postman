@@ -1,0 +1,19 @@
+version: 1
+kind: request
+id: "r0000000-0000-4000-8000-000000000002"
+name: Multiple Facts
+description: Get multiple random cat facts at once
+method: GET
+url: "{{meowfactsBaseUrl}}/"
+headers:
+  - key: Accept
+    value: application/json
+    enabled: true
+query:
+  - key: count
+    value: "3"
+    enabled: true
+path: []
+body:
+  type: none
+docs: get-multiple-facts.md

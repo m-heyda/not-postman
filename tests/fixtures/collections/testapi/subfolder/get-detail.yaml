@@ -1,0 +1,15 @@
+version: 1
+kind: request
+id: "test-request-get-detail"
+name: Get Detail
+description: Fetch item by ID
+method: GET
+url: "{{testBaseUrl}}/items/:itemId"
+headers: []
+query: []
+path:
+  - key: itemId
+    value: "1"
+    enabled: true
+body:
+  type: none

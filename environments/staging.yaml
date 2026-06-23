@@ -1,10 +1,10 @@
 version: 1
 kind: environment
-id: "00000000-0000-4000-8000-000000000002"
-name: local
+id: "env-staging"
+name: Staging
 variables:
-  - key: jsonplaceholderBaseUrl
-    value: "{{JSONPLACEHOLDER_BASE_URL}}"
+  - key: meowfactsBaseUrl
+    value: "https://meowfacts.herokuapp.com"
     enabled: true
   - key: httpbinBaseUrl
     value: "{{HTTPBIN_BASE_URL}}"

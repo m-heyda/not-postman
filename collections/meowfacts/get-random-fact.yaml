@@ -1,0 +1,16 @@
+version: 1
+kind: request
+id: "r0000000-0000-4000-8000-000000000001"
+name: Random Fact
+description: Get a single random cat fact
+method: GET
+url: "{{meowfactsBaseUrl}}/"
+headers:
+  - key: Accept
+    value: application/json
+    enabled: true
+query: []
+path: []
+body:
+  type: none
+docs: get-random-fact.md

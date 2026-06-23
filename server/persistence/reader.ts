@@ -1,78 +1,14 @@
 import fs from "node:fs/promises";
-import path from "node:path";
 import yaml from "js-yaml";
-import { z } from "zod";
-import { config } from "../config.js";
+import { requestSchema } from "../../src/domain/schemas/request.schema.js";
+import type { RequestSchema } from "../../src/domain/schemas/request.schema.js";
 import { AppError } from "../domain/error.js";
 import { resolveVariables } from "../executor/variables.js";
+import { assertSafeCollectionsPath } from "./path-utils.js";
 
-const keyValuePairSchema = z.object({
-  key: z.string(),
-  value: z.string(),
-  enabled: z.boolean(),
-  description: z.string().optional(),
-});
+export type { RequestSchema as ParsedRequest };
 
-const requestBodySchema = z.object({
-  type: z.enum([
-    "none",
-    "json",
-    "text",
-    "xml",
-    "form-urlencoded",
-    "multipart",
-  ]),
-  content: z.string().optional(),
-});
-
-export const requestSchema = z.object({
-  version: z.literal(1),
-  kind: z.literal("request"),
-  id: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  method: z.enum([
-    "GET",
-    "POST",
-    "PUT",
-    "PATCH",
-    "DELETE",
-    "HEAD",
-    "OPTIONS",
-  ]),
-  url: z.string(),
-  headers: z.array(keyValuePairSchema).default([]),
-  query: z.array(keyValuePairSchema).default([]),
-  path: z.array(keyValuePairSchema).default([]),
-  body: requestBodySchema,
-  docs: z.string().optional(),
-  meta: z
-    .object({
-      generatedType: z.string().optional(),
-      contractPath: z.string().optional(),
-    })
-    .optional(),
-});
-
-export type ParsedRequest = z.infer<typeof requestSchema>;
-
-function assertSafePath(relativePath: string): string {
-  const normalized = path.normalize(relativePath).replace(/^(\.\.(\/|\\|$))+/, "");
-  if (normalized.includes("..")) {
-    throw new AppError("PATH_TRAVERSAL", "Invalid request path", 400);
-  }
-
-  const fullPath = path.resolve(config.workspaceRoot, "collections", normalized);
-  const collectionsRoot = path.resolve(config.workspaceRoot, "collections");
-
-  if (!fullPath.startsWith(collectionsRoot)) {
-    throw new AppError("PATH_TRAVERSAL", "Path outside collections directory", 400);
-  }
-
-  return fullPath;
-}
-
-function resolveRequestFields(request: ParsedRequest): ParsedRequest {
+function resolveRequestFields(request: RequestSchema): RequestSchema {
   return {
     ...request,
     url: resolveVariables(request.url),
@@ -91,16 +27,7 @@ function resolveRequestFields(request: ParsedRequest): ParsedRequest {
   };
 }
 
-export async function loadRequest(relativePath: string): Promise<ParsedRequest> {
-  const fullPath = assertSafePath(relativePath);
-
-  let raw: string;
-  try {
-    raw = await fs.readFile(fullPath, "utf-8");
-  } catch {
-    throw new AppError("FILE_NOT_FOUND", `Request not found: ${relativePath}`, 404);
-  }
-
+function parseAndValidateYaml(raw: string, relativePath: string): RequestSchema {
   let parsed: unknown;
   try {
     parsed = yaml.load(raw);
@@ -119,19 +46,57 @@ export async function loadRequest(relativePath: string): Promise<ParsedRequest> 
     );
   }
 
-  return resolveRequestFields(result.data);
+  return result.data;
+}
+
+async function readRequestFile(relativePath: string): Promise<{ raw: string; fullPath: string }> {
+  const fullPath = assertSafeCollectionsPath(relativePath);
+
+  let raw: string;
+  try {
+    raw = await fs.readFile(fullPath, "utf-8");
+  } catch {
+    throw new AppError(
+      "FILE_NOT_FOUND",
+      `Request not found: ${relativePath}`,
+      404,
+    );
+  }
+
+  return { raw, fullPath };
+}
+
+export async function loadRequest(
+  relativePath: string,
+): Promise<RequestSchema> {
+  const { raw } = await readRequestFile(relativePath);
+  const validated = parseAndValidateYaml(raw, relativePath);
+  return resolveRequestFields(validated);
+}
+
+export async function loadRequestRaw(
+  relativePath: string,
+): Promise<RequestSchema> {
+  const { raw } = await readRequestFile(relativePath);
+  return parseAndValidateYaml(raw, relativePath);
 }
 
 export async function listExampleRequests(): Promise<
   { path: string; name: string }[]
 > {
-  const examplesDir = path.join(config.workspaceRoot, "collections", "examples");
-  const entries = await fs.readdir(examplesDir);
+  const examplesDir = assertSafeCollectionsPath("examples");
+  let entries: string[];
+  try {
+    entries = await fs.readdir(examplesDir);
+  } catch {
+    return [];
+  }
+
   const requests: { path: string; name: string }[] = [];
 
   for (const entry of entries) {
     if (!entry.endsWith(".yaml") || entry === "collection.yaml") continue;
-    const relativePath = path.join("examples", entry).replace(/\\/g, "/");
+    const relativePath = `examples/${entry}`;
     const request = await loadRequest(relativePath);
     requests.push({ path: relativePath, name: request.name });
   }

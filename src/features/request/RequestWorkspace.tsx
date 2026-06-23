@@ -17,7 +17,7 @@ import { useRequestStore } from "@/features/request/request.store";
 import { apiGet, apiPost, ApiClientError } from "@/lib/api/client";
 import { queryKeys } from "@/lib/query/keys";
 
-const DEFAULT_REQUEST_PATH = "examples/jsonplaceholder-list-posts.yaml";
+const DEFAULT_REQUEST_PATH = "meowfacts/get-random-fact.yaml";
 
 async function loadRequest(path: string): Promise<Request> {
   return apiGet<Request>(`/api/requests/${path}`);

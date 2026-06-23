@@ -1,8 +1,9 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { keyValuePairSchema } from "../../src/domain/schemas/request.schema.js";
 import { AppError, isAppError } from "../domain/error.js";
 import { proxyRequest } from "../executor/proxy.js";
-import { loadRequest, listExampleRequests } from "../persistence/reader.js";
+import { loadRequestRaw, listExampleRequests } from "../persistence/reader.js";
 
 const executeSchema = z.object({
   method: z.enum([
@@ -15,30 +16,16 @@ const executeSchema = z.object({
     "OPTIONS",
   ]),
   url: z.string().min(1),
-  headers: z
-    .array(
-      z.object({
-        key: z.string(),
-        value: z.string(),
-        enabled: z.boolean(),
-      }),
-    )
-    .optional(),
-  query: z
-    .array(
-      z.object({
-        key: z.string(),
-        value: z.string(),
-        enabled: z.boolean(),
-      }),
-    )
-    .optional(),
+  headers: z.array(keyValuePairSchema).optional(),
+  query: z.array(keyValuePairSchema).optional(),
+  path: z.array(keyValuePairSchema).optional(),
   body: z
     .object({
-      type: z.string(),
+      type: z.enum(["none", "json", "text", "xml", "form-urlencoded", "multipart"]),
       content: z.string().optional(),
     })
     .optional(),
+  environment: z.string().optional(),
 });
 
 export async function registerExecuteRoutes(app: FastifyInstance) {
@@ -55,7 +42,7 @@ export async function registerExecuteRoutes(app: FastifyInstance) {
         throw new AppError("FILE_NOT_FOUND", "Request path required", 400);
       }
 
-      const data = await loadRequest(relativePath);
+      const data = await loadRequestRaw(relativePath);
       return { data };
     },
   );

@@ -1,0 +1,19 @@
+version: 1
+kind: request
+id: "r0000000-0000-4000-8000-000000000003"
+name: Fact by ID
+description: Get a specific cat fact by its ID
+method: GET
+url: "{{meowfactsBaseUrl}}/"
+headers:
+  - key: Accept
+    value: application/json
+    enabled: true
+query:
+  - key: id
+    value: "3"
+    enabled: true
+path: []
+body:
+  type: none
+docs: get-fact-by-id.md

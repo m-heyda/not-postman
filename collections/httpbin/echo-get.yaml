@@ -1,8 +1,8 @@
 version: 1
 kind: request
-id: "00000000-0000-4000-8000-000000000004"
+id: "r0000000-0000-4000-8000-000000000010"
 name: Echo GET Params
-description: httpbin — echoes query params back (good for testing params UI)
+description: httpbin echoes query params back (good for testing params UI)
 method: GET
 url: "{{httpbinBaseUrl}}/get"
 headers: []
@@ -16,3 +16,4 @@ query:
 path: []
 body:
   type: none
+docs: echo-get.md

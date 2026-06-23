@@ -26,59 +26,76 @@ The dev script starts:
 ## Usage
 
 1. Start the app with `npm run dev`
-2. The **List Posts** example loads automatically (JSONPlaceholder)
-3. Edit query params (e.g. change `_limit` from `5` to `2`)
+2. The **Random Fact** example loads automatically (meowfacts API)
+3. Edit query params (e.g. add `count=3`)
 4. Click **Send** to fetch a live response
-5. Switch examples with the buttons (JSONPlaceholder / httpbin)
+5. Switch examples with the sidebar tree
 
-## Example APIs
+## Seeded APIs
 
-No authentication required for the seeded examples.
+### Meowfacts
 
-### JSONPlaceholder
-
-- Docs: [jsonplaceholder.typicode.com](https://jsonplaceholder.typicode.com/)
-- Base URL env: `JSONPLACEHOLDER_BASE_URL`
-- Example: `GET /posts?_limit=5` — returns a JSON array of fake posts
+- Docs: [github.com/wh-iterabb-it/meowfacts](https://github.com/wh-iterabb-it/meowfacts)
+- Base URL: `https://meowfacts.herokuapp.com`
+- No authentication required
+- Requests: Random Fact, Multiple Facts, Fact by ID, Localized Fact
 
 ### httpbin
 
 - Docs: [httpbin.org](https://httpbin.org/)
-- Base URL env: `HTTPBIN_BASE_URL`
-- Example: `GET /get?foo=bar&debug=true` — echoes your query params in the response `args` field (useful for verifying the params UI)
+- Base URL: `https://httpbin.org`
+- No authentication required
+- Requests: Echo GET Params
+
+## Adding a new API domain
+
+To add a new API collection, two steps:
+
+**1. Create a collection folder:**
+
+```
+collections/myapi/
+  collection.yaml    # name + description
+  get-resource.yaml  # request YAML using {{myapiBaseUrl}}
+  get-resource.md    # co-located docs (optional)
+```
+
+**2. Add the domain to each environment file:**
+
+```yaml
+# environments/development.yaml (and staging.yaml, production.yaml)
+variables:
+  - key: myapiBaseUrl
+    value: "https://myapi.example.com"
+    enabled: true
+```
+
+Convention: variable key = `{folderName}BaseUrl`.
+
+For private APIs, use `.env` indirection: `value: "{{MY_API_BASE_URL}}"` and add `MY_API_BASE_URL=...` to `.env`.
 
 ## Environment variables
 
 Copy `.env.example` to `.env`:
 
 ```env
-JSONPLACEHOLDER_BASE_URL=https://jsonplaceholder.typicode.com
 HTTPBIN_BASE_URL=https://httpbin.org
 PORT=3001
 ```
 
-YAML environments reference these via placeholders, e.g. `{{JSONPLACEHOLDER_BASE_URL}}` in [`environments/local.yaml`](environments/local.yaml).
-
-### Staging domains (future)
-
-When connecting to real APIs, add secrets to `.env` (never commit this file):
-
-```env
-STAGING_BASE_URL=https://api.staging.example.com
-STAGING_API_KEY=your-key-here
-```
-
-Reference them in request headers as `Bearer {{STAGING_API_KEY}}` or in environment YAML as `{{STAGING_BASE_URL}}`.
+meowfacts uses inline URLs in environment YAML — no `.env` entry needed.
 
 ## Project layout
 
 ```
 not-postman/
-├── collections/          # API requests as YAML (one file per endpoint)
-├── environments/         # Non-secret env vars (reference .env)
-├── generated/            # Generated TS types (future)
+├── collections/          # API requests as YAML (one folder per API)
+│   ├── meowfacts/        # Cat facts API
+│   └── httpbin/          # HTTP testing service
+├── environments/         # Environment YAML (dev, staging, production)
 ├── server/               # Node.js API + HTTP proxy
 ├── src/                  # React frontend
+├── tests/                # Test fixtures and helpers
 ├── workspace.yaml        # Workspace metadata
 ├── .env.example          # Env template
 └── README.md
@@ -90,7 +107,6 @@ not-postman/
 - **Backend:** Node.js + Fastify — reads YAML, proxies HTTP (avoids browser CORS)
 - **Persistence:** YAML files in the repo; Git is the source of truth
 - **Secrets:** `.env` only (gitignored)
-- **History:** localStorage (future plan)
 - **Security:** Server binds to `127.0.0.1` only; not exposed on LAN
 
 ## Scripts
@@ -102,10 +118,27 @@ not-postman/
 | `npm run dev:server` | Fastify only |
 | `npm run build` | Typecheck + Vite build |
 | `npm run typecheck` | TypeScript check |
+| `npm test` | Run test suite (Vitest) |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run test:coverage` | Run tests with coverage |
 
-## Verification
+## Running tests
 
-- `GET http://localhost:5173/api/health` → `{ "status": "ok" }`
-- Send **List Posts** → HTTP 200, JSON array
-- Change `_limit` to `2` → response contains 2 items
-- Load **Echo GET Params** → response `args` matches your params
+```bash
+npm test
+```
+
+Tests use Vitest with co-located `*.test.ts` files. Server integration tests use `fastify.inject()` — no running server needed.
+
+## API Endpoints
+
+| Endpoint | Description |
+|---|---|
+| `GET /api/health` | Health check |
+| `GET /api/workspace` | Workspace metadata + collection list |
+| `GET /api/collections/:path/tree` | Collection file tree with HTTP methods |
+| `GET /api/environments` | List environments |
+| `GET /api/environments/:id` | Resolved environment variables |
+| `GET /api/requests/*` | Raw request YAML (unresolved vars) |
+| `GET /api/docs/*` | Co-located markdown documentation |
+| `POST /api/execute` | Execute request via server proxy |

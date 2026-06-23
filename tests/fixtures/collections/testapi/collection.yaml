@@ -1,0 +1,5 @@
+version: 1
+kind: collection
+id: "test-collection-id"
+name: Test API
+description: Fixture collection for tests
