@@ -1,0 +1,8 @@
+version: 1
+kind: environment
+id: "test-env-staging"
+name: Staging
+variables:
+  - key: testBaseUrl
+    value: "{{TEST_STAGING_URL}}"
+    enabled: true

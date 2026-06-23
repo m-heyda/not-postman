@@ -1,0 +1,19 @@
+version: 1
+kind: request
+id: "test-request-get-items"
+name: Get Items
+description: Fetch all items
+method: GET
+url: "{{testBaseUrl}}/items"
+headers:
+  - key: Accept
+    value: application/json
+    enabled: true
+query:
+  - key: limit
+    value: "10"
+    enabled: true
+path: []
+body:
+  type: none
+docs: get-items.md

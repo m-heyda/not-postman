@@ -1,0 +1,5 @@
+version: 1
+kind: collection
+id: "c0000000-0000-4000-8000-000000000002"
+name: httpbin
+description: "HTTP testing service — https://httpbin.org"

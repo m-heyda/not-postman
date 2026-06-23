@@ -1,5 +1,0 @@
-version: 1
-kind: collection
-id: "00000000-0000-4000-8000-000000000010"
-name: Examples
-description: Public API examples for testing not-postman

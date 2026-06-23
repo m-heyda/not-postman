@@ -1,0 +1,5 @@
+version: 1
+kind: collection
+id: "c0000000-0000-4000-8000-000000000001"
+name: Meowfacts
+description: "Cat facts API — https://github.com/wh-iterabb-it/meowfacts"

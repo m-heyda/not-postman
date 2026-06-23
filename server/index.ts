@@ -6,6 +6,9 @@ import {
   registerExecuteRoutes,
 } from "./routes/execute.js";
 import { registerHealthRoutes } from "./routes/health.js";
+import { registerWorkspaceRoutes } from "./routes/workspace.js";
+import { registerEnvironmentRoutes } from "./routes/environments.js";
+import { registerDocsRoutes } from "./routes/docs.js";
 
 export async function buildServer() {
   const app = Fastify({ logger: true });
@@ -18,6 +21,9 @@ export async function buildServer() {
   registerErrorHandler(app);
   await registerHealthRoutes(app);
   await registerExecuteRoutes(app);
+  await registerWorkspaceRoutes(app);
+  await registerEnvironmentRoutes(app);
+  await registerDocsRoutes(app);
 
   return app;
 }

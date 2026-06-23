@@ -1,0 +1,11 @@
+version: 1
+kind: environment
+id: "env-development"
+name: Development
+variables:
+  - key: meowfactsBaseUrl
+    value: "https://meowfacts.herokuapp.com"
+    enabled: true
+  - key: httpbinBaseUrl
+    value: "https://httpbin.org"
+    enabled: true

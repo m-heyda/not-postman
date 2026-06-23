@@ -1,0 +1,11 @@
+version: 1
+kind: environment
+id: "test-env-dev"
+name: Development
+variables:
+  - key: testBaseUrl
+    value: "https://dev.example.com"
+    enabled: true
+  - key: disabledVar
+    value: "should-not-resolve"
+    enabled: false

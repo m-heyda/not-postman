@@ -1,7 +1,6 @@
-import { getAllEnv, getEnv } from "../config.js";
+import { getEnv } from "../config.js";
 
 const ENV_VAR_PATTERN = /\{\{([A-Z_][A-Z0-9_]*)\}\}/g;
-const YAML_VAR_PATTERN = /\{\{([a-zA-Z][a-zA-Z0-9_]*)\}\}/g;
 
 export function resolveEnvVars(value: string): string {
   return value.replace(ENV_VAR_PATTERN, (_match, name: string) => {
@@ -21,19 +20,12 @@ export function resolveYamlVars(
   return resolved;
 }
 
+/**
+ * @deprecated Use loadEnvironmentVarMap from persistence/environment.ts instead.
+ * Returns an empty map — environment YAML is now the source of truth.
+ */
 export function loadYamlVarMap(): Record<string, string> {
-  // For setup phase, map yaml var keys to env-resolved values
-  const env = getAllEnv();
-  const map: Record<string, string> = {};
-
-  if (env.JSONPLACEHOLDER_BASE_URL) {
-    map.jsonplaceholderBaseUrl = env.JSONPLACEHOLDER_BASE_URL;
-  }
-  if (env.HTTPBIN_BASE_URL) {
-    map.httpbinBaseUrl = env.HTTPBIN_BASE_URL;
-  }
-
-  return map;
+  return {};
 }
 
 export function resolveVariables(value: string): string {
@@ -42,8 +34,17 @@ export function resolveVariables(value: string): string {
   return resolveEnvVars(afterYaml);
 }
 
+export function resolveWithEnvironment(
+  value: string,
+  envVars: Record<string, string>,
+): string {
+  const afterYaml = resolveYamlVars(value, envVars);
+  return resolveEnvVars(afterYaml);
+}
+
 export function findUnresolvedVars(value: string): string[] {
   const unresolved: string[] = [];
+  const YAML_VAR_PATTERN = /\{\{([a-zA-Z][a-zA-Z0-9_]*)\}\}/g;
   const patterns = [ENV_VAR_PATTERN, YAML_VAR_PATTERN];
 
   for (const pattern of patterns) {

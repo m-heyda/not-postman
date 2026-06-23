@@ -1,0 +1,7 @@
+version: 1
+kind: workspace
+id: "test-workspace-id"
+name: Test Workspace
+description: Fixture workspace for tests
+createdAt: "2025-01-01T00:00:00.000Z"
+updatedAt: "2025-01-01T00:00:00.000Z"
