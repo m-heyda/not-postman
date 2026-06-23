@@ -11,6 +11,7 @@ import {
 import { HTTP_METHODS, type HttpMethod } from "@/domain/models/request";
 import { useRequestStore } from "@/features/request/request.store";
 import { useEnvironmentStore } from "@/features/environment/environment.store";
+import { DomainManagerDialog } from "@/features/environment/DomainManagerDialog";
 
 interface RequestBarProps {
   onSend: () => void;
@@ -25,84 +26,114 @@ export function RequestBar({ onSend }: RequestBarProps) {
   const setBaseUrlVar = useRequestStore((s) => s.setBaseUrlVar);
   const setUrlPath = useRequestStore((s) => s.setUrlPath);
 
+  const domains = useEnvironmentStore((s) => s.domains);
   const activeVariables = useEnvironmentStore((s) => s.activeVariables);
 
-  const domainVars = Object.entries(activeVariables).filter(([key]) =>
-    key.toLowerCase().includes("baseurl") || key.toLowerCase().includes("base_url"),
-  );
-
-  const resolvedDomain = baseUrlVar ? (activeVariables[baseUrlVar] ?? `{{${baseUrlVar}}}`) : "";
+  const selectedDomain = domains.find((d) => d.varKey === baseUrlVar);
+  const resolvedUrl = baseUrlVar
+    ? (activeVariables[baseUrlVar] ?? `{{${baseUrlVar}}}`)
+    : "";
   const hasUrl = !!(baseUrlVar || urlPath.trim());
 
   return (
-    <div className="flex items-center gap-0">
-      {/* Method */}
-      <Select
-        value={method}
-        onValueChange={(value) => setMethod(value as HttpMethod)}
-      >
-        <SelectTrigger className="w-[100px] rounded-r-none border-r-0 font-mono font-semibold">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {HTTP_METHODS.map((m) => (
-            <SelectItem key={m} value={m} className="font-mono">
-              {m}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+    <div className="space-y-1">
+      <div className="flex items-center gap-0">
+        {/* Method */}
+        <Select
+          value={method}
+          onValueChange={(value) => setMethod(value as HttpMethod)}
+        >
+          <SelectTrigger className="w-[100px] rounded-r-none border-r-0 font-mono font-semibold">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {HTTP_METHODS.map((m) => (
+              <SelectItem key={m} value={m} className="font-mono">
+                {m}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      {/* Domain selector */}
-      <Select value={baseUrlVar} onValueChange={setBaseUrlVar}>
-        <SelectTrigger className="w-[220px] rounded-none border-r-0 font-mono text-xs text-muted-foreground">
-          <SelectValue placeholder="Select domain..." />
-        </SelectTrigger>
-        <SelectContent>
-          {domainVars.map(([key, value]) => (
-            <SelectItem key={key} value={key} className="font-mono text-xs">
-              <span className="font-medium">{key}</span>
-              <span className="ml-2 text-muted-foreground truncate">
-                {value}
-              </span>
-            </SelectItem>
-          ))}
-          {domainVars.length === 0 && (
-            <SelectItem value="__none" disabled className="text-xs">
-              No domains in environment
-            </SelectItem>
+        {/* Domain selector */}
+        <Select value={baseUrlVar} onValueChange={setBaseUrlVar}>
+          <SelectTrigger className="w-[240px] rounded-none border-r-0 font-mono text-xs">
+            <SelectValue placeholder="Select domain...">
+              {selectedDomain ? (
+                <span className="flex items-center gap-1.5">
+                  <span className="font-medium">{selectedDomain.name}</span>
+                  <span className="text-muted-foreground truncate text-[10px]">
+                    {selectedDomain.url}
+                  </span>
+                </span>
+              ) : baseUrlVar ? (
+                <span className="text-amber-600">{`{{${baseUrlVar}}}`}</span>
+              ) : (
+                "Select domain..."
+              )}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {domains.map((d) => (
+              <SelectItem
+                key={d.varKey}
+                value={d.varKey}
+                className="font-mono text-xs"
+              >
+                <span className="flex items-center gap-2">
+                  <span className="font-medium min-w-[80px]">{d.name}</span>
+                  <span className="text-muted-foreground truncate">
+                    {d.url}
+                  </span>
+                </span>
+              </SelectItem>
+            ))}
+            {domains.length === 0 && (
+              <SelectItem value="__none" disabled className="text-xs">
+                No domains — open settings to add
+              </SelectItem>
+            )}
+          </SelectContent>
+        </Select>
+
+        {/* Domain manager button */}
+        <div className="border-y px-1 flex items-center h-9">
+          <DomainManagerDialog />
+        </div>
+
+        {/* Path input */}
+        <Input
+          value={urlPath}
+          onChange={(e) => setUrlPath(e.target.value)}
+          placeholder="/endpoint"
+          className="flex-1 rounded-none border-l-0 border-r-0 font-mono text-sm"
+          spellCheck={false}
+        />
+
+        {/* Send */}
+        <Button
+          onClick={onSend}
+          disabled={isLoading || !hasUrl}
+          className="rounded-l-none"
+        >
+          {isLoading ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Send className="size-4" />
           )}
-        </SelectContent>
-      </Select>
+          Send
+        </Button>
+      </div>
 
-      {/* Path input */}
-      <Input
-        value={urlPath}
-        onChange={(e) => setUrlPath(e.target.value)}
-        placeholder="/endpoint"
-        className="flex-1 rounded-none border-r-0 font-mono text-sm"
-        spellCheck={false}
-      />
-
-      {/* Send */}
-      <Button
-        onClick={onSend}
-        disabled={isLoading || !hasUrl}
-        className="rounded-l-none"
-      >
-        {isLoading ? (
-          <Loader2 className="size-4 animate-spin" />
-        ) : (
-          <Send className="size-4" />
-        )}
-        Send
-      </Button>
-
-      {/* Resolved preview */}
-      {baseUrlVar && (
-        <span className="ml-3 text-xs text-muted-foreground truncate max-w-[300px] hidden md:inline" title={resolvedDomain + urlPath}>
-          {resolvedDomain}{urlPath}
-        </span>
+      {/* Resolved URL preview */}
+      {resolvedUrl && (
+        <p
+          className="text-xs text-muted-foreground font-mono pl-[100px] truncate"
+          title={resolvedUrl + urlPath}
+        >
+          {resolvedUrl}
+          {urlPath}
+        </p>
       )}
     </div>
   );
