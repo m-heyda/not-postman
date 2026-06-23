@@ -1,64 +1,56 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type {
-  ExampleRequestSummary,
-  ExecuteResponse,
-  Request,
-} from "@/domain/models/request";
+import type { ExecuteResponse, Request } from "@/domain/models/request";
 import { QueryParamsEditor } from "@/features/request/QueryParamsEditor";
 import { RequestBar } from "@/features/request/RequestBar";
 import { ResponsePanel } from "@/features/request/ResponsePanel";
 import { useRequestStore } from "@/features/request/request.store";
+import { EnvironmentSelector } from "@/features/environment/EnvironmentSelector";
+import { useEnvironmentStore } from "@/features/environment/environment.store";
 import { apiGet, apiPost, ApiClientError } from "@/lib/api/client";
 import { queryKeys } from "@/lib/query/keys";
 
 const DEFAULT_REQUEST_PATH = "meowfacts/get-random-fact.yaml";
 
+interface EnvironmentSummary {
+  id: string;
+  name: string;
+}
+
+interface EnvironmentDetail {
+  id: string;
+  name: string;
+  variables: Record<string, string>;
+}
+
 async function loadRequest(path: string): Promise<Request> {
   return apiGet<Request>(`/api/requests/${path}`);
 }
 
-async function executeRequest(): Promise<ExecuteResponse> {
-  const state = useRequestStore.getState();
-  return apiPost<ExecuteResponse>("/api/execute", {
-    method: state.method,
-    url: state.url,
-    headers: state.headers,
-    query: state.query,
-    body: {
-      type: state.bodyType,
-      content: state.bodyContent,
-    },
-  });
-}
-
-export function RequestWorkspace() {
-  const loadFromRequest = useRequestStore((s) => s.loadFromRequest);
-  const name = useRequestStore((s) => s.name);
-  const response = useRequestStore((s) => s.response);
-  const isLoading = useRequestStore((s) => s.isLoading);
-  const error = useRequestStore((s) => s.error);
+function useExecuteRequest() {
   const setLoading = useRequestStore((s) => s.setLoading);
   const setResponse = useRequestStore((s) => s.setResponse);
   const setError = useRequestStore((s) => s.setError);
 
-  const requestQuery = useQuery({
-    queryKey: queryKeys.request(DEFAULT_REQUEST_PATH),
-    queryFn: () => loadRequest(DEFAULT_REQUEST_PATH),
-  });
-
-  const examplesQuery = useQuery({
-    queryKey: queryKeys.examples,
-    queryFn: () => apiGet<ExampleRequestSummary[]>("/api/examples"),
-  });
-
-  const executeMutation = useMutation({
-    mutationFn: executeRequest,
+  return useMutation({
+    mutationFn: async (): Promise<ExecuteResponse> => {
+      const state = useRequestStore.getState();
+      const envId = useEnvironmentStore.getState().activeEnvironmentId;
+      return apiPost<ExecuteResponse>("/api/execute", {
+        method: state.method,
+        url: state.url,
+        headers: state.headers,
+        query: state.query,
+        body: {
+          type: state.bodyType,
+          content: state.bodyContent,
+        },
+        environment: envId,
+      });
+    },
     onMutate: () => {
       setLoading(true);
       setError(null);
@@ -78,6 +70,49 @@ export function RequestWorkspace() {
       }
     },
   });
+}
+
+export function RequestWorkspace() {
+  const loadFromRequest = useRequestStore((s) => s.loadFromRequest);
+  const name = useRequestStore((s) => s.name);
+  const response = useRequestStore((s) => s.response);
+  const isLoading = useRequestStore((s) => s.isLoading);
+  const error = useRequestStore((s) => s.error);
+
+  const activeEnvironmentId = useEnvironmentStore(
+    (s) => s.activeEnvironmentId,
+  );
+  const setEnvironments = useEnvironmentStore((s) => s.setEnvironments);
+  const setActiveVariables = useEnvironmentStore((s) => s.setActiveVariables);
+
+  const requestQuery = useQuery({
+    queryKey: queryKeys.request(DEFAULT_REQUEST_PATH),
+    queryFn: () => loadRequest(DEFAULT_REQUEST_PATH),
+  });
+
+  const envListQuery = useQuery({
+    queryKey: queryKeys.environments,
+    queryFn: () => apiGet<EnvironmentSummary[]>("/api/environments"),
+  });
+
+  const envDetailQuery = useQuery({
+    queryKey: queryKeys.environment(activeEnvironmentId),
+    queryFn: () =>
+      apiGet<EnvironmentDetail>(`/api/environments/${activeEnvironmentId}`),
+    enabled: !!activeEnvironmentId,
+  });
+
+  useEffect(() => {
+    if (envListQuery.data) {
+      setEnvironments(envListQuery.data);
+    }
+  }, [envListQuery.data, setEnvironments]);
+
+  useEffect(() => {
+    if (envDetailQuery.data) {
+      setActiveVariables(envDetailQuery.data.variables);
+    }
+  }, [envDetailQuery.data, setActiveVariables]);
 
   useEffect(() => {
     if (requestQuery.data && name === "") {
@@ -85,16 +120,7 @@ export function RequestWorkspace() {
     }
   }, [requestQuery.data, name, loadFromRequest]);
 
-  const handleLoadExample = async (path: string) => {
-    try {
-      const request = await loadRequest(path);
-      loadFromRequest(request);
-    } catch (err) {
-      const message =
-        err instanceof ApiClientError ? err.message : "Failed to load example";
-      setError(message);
-    }
-  };
+  const executeMutation = useExecuteRequest();
 
   if (requestQuery.isLoading) {
     return (
@@ -108,8 +134,7 @@ export function RequestWorkspace() {
     return (
       <div className="flex h-screen items-center justify-center p-8">
         <div className="max-w-md text-center text-sm text-destructive">
-          Failed to load example request. Make sure the server is running and
-          `.env` is configured.
+          Failed to load request. Make sure the server is running.
         </div>
       </div>
     );
@@ -124,23 +149,8 @@ export function RequestWorkspace() {
             {name || "Local-first API client"}
           </p>
         </div>
-        <Badge variant="secondary">local env</Badge>
+        <EnvironmentSelector />
       </header>
-
-      {examplesQuery.data && examplesQuery.data.length > 1 && (
-        <div className="flex flex-wrap gap-2">
-          {examplesQuery.data.map((example) => (
-            <Button
-              key={example.path}
-              variant="outline"
-              size="sm"
-              onClick={() => handleLoadExample(example.path)}
-            >
-              {example.name}
-            </Button>
-          ))}
-        </div>
-      )}
 
       <RequestBar onSend={() => executeMutation.mutate()} />
 
