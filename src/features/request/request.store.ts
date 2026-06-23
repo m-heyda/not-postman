@@ -205,7 +205,7 @@ export const useRequestStore = create<RequestDraftState>((set, get) => {
         response: null,
         error: null,
         generated: request.generated ?? null,
-        generatedContent: null,
+        generatedContent: request.generatedContent ?? null,
         savedRevision: rev,
         dirtyRevision: rev,
       });

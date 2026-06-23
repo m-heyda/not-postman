@@ -38,6 +38,8 @@ export interface Request {
     typeName: string;
     sourceResponse?: string;
   };
+  /** Populated by GET /api/requests when a generated type file exists on disk */
+  generatedContent?: string;
 }
 
 export interface ExecuteRequestPayload {

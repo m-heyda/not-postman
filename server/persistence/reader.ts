@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import path from "node:path";
 import yaml from "js-yaml";
 import { requestSchema } from "../../src/domain/schemas/request.schema.js";
 import type { RequestSchema } from "../../src/domain/schemas/request.schema.js";
@@ -79,6 +80,26 @@ export async function loadRequestRaw(
 ): Promise<RequestSchema> {
   const { raw } = await readRequestFile(relativePath);
   return parseAndValidateYaml(raw, relativePath);
+}
+
+export async function loadRequestRawWithGenerated(
+  relativePath: string,
+): Promise<RequestSchema & { generatedContent?: string }> {
+  const request = await loadRequestRaw(relativePath);
+  if (!request.generated?.typescript) return request;
+
+  const requestFullPath = assertSafeCollectionsPath(relativePath);
+  const tsFullPath = path.join(
+    path.dirname(requestFullPath),
+    request.generated.typescript,
+  );
+
+  try {
+    const generatedContent = await fs.readFile(tsFullPath, "utf-8");
+    return { ...request, generatedContent };
+  } catch {
+    return request;
+  }
 }
 
 export async function listExampleRequests(): Promise<

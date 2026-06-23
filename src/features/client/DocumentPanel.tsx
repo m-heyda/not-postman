@@ -96,7 +96,7 @@ export function DocumentPanel({ onSend, isRequestLoading }: DocumentPanelProps) 
               )}
             </TabsTrigger>
             <TabsTrigger value="body">Body</TabsTrigger>
-            {generatedContent && (
+            {generated && (
               <TabsTrigger value="types">
                 Response Types
               </TabsTrigger>
@@ -128,26 +128,34 @@ export function DocumentPanel({ onSend, isRequestLoading }: DocumentPanelProps) 
               <BodyEditor />
             </TabsContent>
           )}
-          {activeTab === "types" && generatedContent && (
+          {activeTab === "types" && generated && (
             <TabsContent value="types" className="mt-3">
-              {generated?.typescript && (
+              {generated.typescript && (
                 <div className="mb-2 flex items-center gap-2">
                   <span className="text-xs text-muted-foreground">
                     {generated.typescript}
                   </span>
-                  <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded">
-                    Saved to disk
-                  </span>
+                  {generatedContent && (
+                    <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded">
+                      Saved to disk
+                    </span>
+                  )}
                 </div>
               )}
-              <div className="rounded-md border overflow-hidden">
-                <MonacoEditor
-                  value={generatedContent}
-                  language="typescript"
-                  readOnly
-                  height="300px"
-                />
-              </div>
+              {generatedContent ? (
+                <div className="rounded-md border overflow-hidden">
+                  <MonacoEditor
+                    value={generatedContent}
+                    language="typescript"
+                    readOnly
+                    height="300px"
+                  />
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Type file could not be loaded. Try restarting the dev server.
+                </p>
+              )}
             </TabsContent>
           )}
         </Tabs>

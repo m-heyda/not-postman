@@ -3,7 +3,10 @@ import { z } from "zod";
 import { keyValuePairSchema } from "../../src/domain/schemas/request.schema.js";
 import { AppError, isAppError } from "../domain/error.js";
 import { proxyRequest } from "../executor/proxy.js";
-import { loadRequestRaw, listExampleRequests } from "../persistence/reader.js";
+import {
+  loadRequestRawWithGenerated,
+  listExampleRequests,
+} from "../persistence/reader.js";
 
 const executeSchema = z.object({
   method: z.enum([
@@ -42,7 +45,7 @@ export async function registerExecuteRoutes(app: FastifyInstance) {
         throw new AppError("FILE_NOT_FOUND", "Request path required", 400);
       }
 
-      const data = await loadRequestRaw(relativePath);
+      const data = await loadRequestRawWithGenerated(relativePath);
       return { data };
     },
   );
