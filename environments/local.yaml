@@ -1,0 +1,11 @@
+version: 1
+kind: environment
+id: "00000000-0000-4000-8000-000000000002"
+name: local
+variables:
+  - key: jsonplaceholderBaseUrl
+    value: "{{JSONPLACEHOLDER_BASE_URL}}"
+    enabled: true
+  - key: httpbinBaseUrl
+    value: "{{HTTPBIN_BASE_URL}}"
+    enabled: true

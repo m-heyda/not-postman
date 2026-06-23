@@ -1,0 +1,18 @@
+version: 1
+kind: request
+id: "00000000-0000-4000-8000-000000000003"
+name: List Posts
+description: JSONPlaceholder — fetch first 5 posts
+method: GET
+url: "{{jsonplaceholderBaseUrl}}/posts"
+headers:
+  - key: Accept
+    value: application/json
+    enabled: true
+query:
+  - key: _limit
+    value: "5"
+    enabled: true
+path: []
+body:
+  type: none

@@ -1,0 +1,18 @@
+version: 1
+kind: request
+id: "00000000-0000-4000-8000-000000000004"
+name: Echo GET Params
+description: httpbin — echoes query params back (good for testing params UI)
+method: GET
+url: "{{httpbinBaseUrl}}/get"
+headers: []
+query:
+  - key: foo
+    value: bar
+    enabled: true
+  - key: debug
+    value: "true"
+    enabled: true
+path: []
+body:
+  type: none

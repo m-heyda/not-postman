@@ -1,0 +1,7 @@
+version: 1
+kind: workspace
+id: "00000000-0000-4000-8000-000000000001"
+name: not-postman
+description: Local-first API client workspace
+createdAt: "2025-01-01T00:00:00.000Z"
+updatedAt: "2025-01-01T00:00:00.000Z"
