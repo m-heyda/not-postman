@@ -116,7 +116,7 @@ export function RequestWorkspace() {
 
   useEffect(() => {
     if (requestQuery.data && name === "") {
-      loadFromRequest(requestQuery.data);
+      loadFromRequest(requestQuery.data, DEFAULT_REQUEST_PATH);
     }
   }, [requestQuery.data, name, loadFromRequest]);
 

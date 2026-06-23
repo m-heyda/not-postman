@@ -24,10 +24,10 @@ export function useLoadRequest(requestPath: string | null) {
   });
 
   useEffect(() => {
-    if (requestQuery.data) {
-      loadFromRequest(requestQuery.data);
+    if (requestQuery.data && requestPath) {
+      loadFromRequest(requestQuery.data, requestPath);
     }
-  }, [requestQuery.data, loadFromRequest]);
+  }, [requestQuery.data, requestPath, loadFromRequest]);
 
   useEffect(() => {
     if (docsQuery.data) {

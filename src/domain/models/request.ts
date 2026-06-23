@@ -12,6 +12,7 @@ export interface KeyValuePair {
   value: string;
   enabled: boolean;
   description?: string;
+  locked?: boolean;
 }
 
 export interface RequestBody {
@@ -32,9 +33,10 @@ export interface Request {
   path: KeyValuePair[];
   body: RequestBody;
   docs?: string;
-  meta?: {
-    generatedType?: string;
-    contractPath?: string;
+  generated?: {
+    typescript: string;
+    typeName: string;
+    sourceResponse?: string;
   };
 }
 

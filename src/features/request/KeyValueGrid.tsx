@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react";
+import { Lock, LockOpen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -24,8 +24,8 @@ export function KeyValueGrid({
   showDescription = true,
 }: KeyValueGridProps) {
   const gridCols = showDescription
-    ? "grid-cols-[1fr_1fr_1fr_36px_36px]"
-    : "grid-cols-[1fr_1fr_36px_36px]";
+    ? "grid-cols-[28px_1fr_1fr_1fr_36px_36px]"
+    : "grid-cols-[28px_1fr_1fr_36px_36px]";
 
   return (
     <div className="space-y-0">
@@ -33,6 +33,7 @@ export function KeyValueGrid({
       <div
         className={`grid ${gridCols} gap-1 border-b bg-muted/40 px-1 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider`}
       >
+        <span />
         <span className="px-2">Key</span>
         <span className="px-2">Value</span>
         {showDescription && <span className="px-2">Description</span>}
@@ -46,6 +47,23 @@ export function KeyValueGrid({
           key={index}
           className={`grid ${gridCols} items-center gap-1 border-b px-1 py-0.5`}
         >
+          <button
+            type="button"
+            className="flex items-center justify-center size-7 rounded hover:bg-muted/50 transition-colors"
+            onClick={() => onUpdate(index, { locked: !row.locked })}
+            aria-label={row.locked ? "Unlock value" : "Lock value"}
+            title={
+              row.locked
+                ? "Value stored in localStorage (click to unlock)"
+                : "Click to lock — value will be stored in localStorage only"
+            }
+          >
+            {row.locked ? (
+              <Lock className="size-3 text-amber-500" />
+            ) : (
+              <LockOpen className="size-3 text-muted-foreground/50" />
+            )}
+          </button>
           <Input
             value={row.key}
             onChange={(e) => onUpdate(index, { key: e.target.value })}
@@ -55,7 +73,8 @@ export function KeyValueGrid({
           <Input
             value={row.value}
             onChange={(e) => onUpdate(index, { value: e.target.value })}
-            placeholder={valuePlaceholder}
+            placeholder={row.locked ? "••••••••" : valuePlaceholder}
+            type={row.locked ? "password" : "text"}
             className="h-8 border-0 shadow-none bg-transparent font-mono text-xs focus-visible:ring-0 focus-visible:ring-offset-0 px-2"
           />
           {showDescription && (
@@ -93,6 +112,7 @@ export function KeyValueGrid({
         className={`grid ${gridCols} items-center gap-1 px-1 py-0.5 cursor-pointer hover:bg-muted/30 transition-colors`}
         onClick={onAdd}
       >
+        <span />
         <Input
           placeholder={keyPlaceholder}
           className="h-8 border-0 shadow-none bg-transparent font-mono text-xs focus-visible:ring-0 focus-visible:ring-offset-0 px-2 pointer-events-none"

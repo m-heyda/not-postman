@@ -1,9 +1,11 @@
-import { Loader2 } from "lucide-react";
+import { Code2, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MonacoEditor } from "@/lib/monaco/MonacoEditor";
 import type { ExecuteResponse } from "@/domain/models/request";
 import { cn, statusColor, tryFormatJson } from "@/lib/utils";
+import { useGenerateTypes } from "./hooks/useGenerateTypes";
 
 interface ResponsePanelProps {
   response: ExecuteResponse | null;
@@ -16,6 +18,8 @@ export function ResponsePanel({
   error,
   isLoading,
 }: ResponsePanelProps) {
+  const { generate, isGenerating, result, canGenerate } = useGenerateTypes();
+
   if (isLoading) {
     return (
       <div className="flex h-48 items-center justify-center gap-2 text-sm text-muted-foreground">
@@ -47,7 +51,7 @@ export function ResponsePanel({
 
   return (
     <div className="space-y-0">
-      {/* Status bar — Postman style */}
+      {/* Status bar */}
       <div className="flex items-center gap-4 px-1 py-2">
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-muted-foreground">Status:</span>
@@ -70,6 +74,27 @@ export function ResponsePanel({
               ? `${(bodySize / 1024).toFixed(1)} KB`
               : `${bodySize} B`}
           </span>
+        </div>
+        <div className="ml-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 gap-1.5 text-xs"
+            disabled={!canGenerate || isGenerating}
+            onClick={() => generate()}
+            title={
+              result
+                ? `Generated: ${result.typePath}`
+                : "Generate TypeScript types from this response"
+            }
+          >
+            <Code2 className="size-3" />
+            {isGenerating
+              ? "Generating..."
+              : result
+                ? `✓ ${result.typeName}`
+                : "Generate Types"}
+          </Button>
         </div>
       </div>
 
