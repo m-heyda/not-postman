@@ -6,12 +6,17 @@ interface TypeGenResult {
   typePath: string;
   typeName: string;
   content: string;
+  sourceResponse?: string;
+  sourceResponseContent?: string;
 }
 
 export function useGenerateTypes() {
   const sourcePath = useRequestStore((s) => s.sourcePath);
   const response = useRequestStore((s) => s.response);
   const setGeneratedContent = useRequestStore((s) => s.setGeneratedContent);
+  const setSourceResponseContent = useRequestStore(
+    (s) => s.setSourceResponseContent,
+  );
   const setGenerated = useRequestStore((s) => s.setGenerated);
 
   const isJsonResponse = (() => {
@@ -35,9 +40,11 @@ export function useGenerateTypes() {
     },
     onSuccess: (data) => {
       setGeneratedContent(data.content);
+      setSourceResponseContent(data.sourceResponseContent ?? null);
       setGenerated({
         typescript: data.typePath,
         typeName: data.typeName,
+        ...(data.sourceResponse ? { sourceResponse: data.sourceResponse } : {}),
       });
     },
   });

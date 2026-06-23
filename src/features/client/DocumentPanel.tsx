@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RequestBar } from "@/features/request/RequestBar";
 import { QueryParamsEditor } from "@/features/request/QueryParamsEditor";
@@ -8,10 +7,11 @@ import { PathParamsEditor } from "@/features/request/PathParamsEditor";
 import { HeadersEditor } from "@/features/request/HeadersEditor";
 import { BodyEditor } from "@/features/request/BodyEditor";
 import { DocsEditor } from "@/features/request/DocsEditor";
-import { ResponsePanel } from "@/features/request/ResponsePanel";
-import { MonacoEditor } from "@/lib/monaco/MonacoEditor";
+import { DescriptionEditor } from "@/features/request/DescriptionEditor";
+import { ResponseView } from "@/features/request/ResponseView";
 import { useRequestStore } from "@/features/request/request.store";
 import { DocumentToolbar } from "./DocumentToolbar";
+import { SaveStatusBar } from "./SaveStatusBar";
 
 interface DocumentPanelProps {
   onSend: () => void;
@@ -24,15 +24,10 @@ function activeCount(rows: { key: string; enabled: boolean }[]): number {
 
 export function DocumentPanel({ onSend, isRequestLoading }: DocumentPanelProps) {
   const [activeTab, setActiveTab] = useState("params");
-  const response = useRequestStore((s) => s.response);
-  const isLoading = useRequestStore((s) => s.isLoading);
-  const error = useRequestStore((s) => s.error);
   const name = useRequestStore((s) => s.name);
   const query = useRequestStore((s) => s.query);
   const path = useRequestStore((s) => s.path);
   const headers = useRequestStore((s) => s.headers);
-  const generatedContent = useRequestStore((s) => s.generatedContent);
-  const generated = useRequestStore((s) => s.generated);
 
   const queryCount = activeCount(query);
   const pathCount = activeCount(path);
@@ -64,9 +59,20 @@ export function DocumentPanel({ onSend, isRequestLoading }: DocumentPanelProps) 
   return (
     <div className="flex flex-1 flex-col min-w-0">
       <DocumentToolbar />
+      <SaveStatusBar />
 
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-        <RequestBar onSend={onSend} />
+        <RequestBar onSend={() => {
+          onSend();
+          setActiveTab("response");
+        }} />
+
+        <div className="space-y-1.5">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Description
+          </p>
+          <DescriptionEditor />
+        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
@@ -96,11 +102,7 @@ export function DocumentPanel({ onSend, isRequestLoading }: DocumentPanelProps) 
               )}
             </TabsTrigger>
             <TabsTrigger value="body">Body</TabsTrigger>
-            {generated && (
-              <TabsTrigger value="types">
-                Response Types
-              </TabsTrigger>
-            )}
+            <TabsTrigger value="response">Response</TabsTrigger>
           </TabsList>
 
           {activeTab === "docs" && (
@@ -128,46 +130,12 @@ export function DocumentPanel({ onSend, isRequestLoading }: DocumentPanelProps) 
               <BodyEditor />
             </TabsContent>
           )}
-          {activeTab === "types" && generated && (
-            <TabsContent value="types" className="mt-3">
-              {generated.typescript && (
-                <div className="mb-2 flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">
-                    {generated.typescript}
-                  </span>
-                  {generatedContent && (
-                    <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded">
-                      Saved to disk
-                    </span>
-                  )}
-                </div>
-              )}
-              {generatedContent ? (
-                <div className="rounded-md border overflow-hidden">
-                  <MonacoEditor
-                    value={generatedContent}
-                    language="typescript"
-                    readOnly
-                    height="300px"
-                  />
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Type file could not be loaded. Try restarting the dev server.
-                </p>
-              )}
+          {activeTab === "response" && (
+            <TabsContent value="response" className="mt-3">
+              <ResponseView />
             </TabsContent>
           )}
         </Tabs>
-
-        <Separator />
-
-        <ResponsePanel
-          response={response}
-          error={error}
-          isLoading={isLoading}
-          onTypesGenerated={() => setActiveTab("types")}
-        />
       </div>
     </div>
   );

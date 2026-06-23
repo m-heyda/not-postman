@@ -65,6 +65,8 @@ export interface TypeGenResult {
   typePath: string;
   typeName: string;
   content: string;
+  sourceResponse?: string;
+  sourceResponseContent?: string;
 }
 
 export async function generateAndSaveTypes(
@@ -153,5 +155,13 @@ export async function generateAndSaveTypes(
   });
   await writeFileAtomic(requestFullPath, updatedYaml);
 
-  return { typePath, typeName, content: tsContent };
+  const sourceResponseContent = JSON.stringify(json, null, 2) + "\n";
+
+  return {
+    typePath,
+    typeName,
+    content: tsContent,
+    sourceResponse: sourceResponsePath,
+    sourceResponseContent,
+  };
 }

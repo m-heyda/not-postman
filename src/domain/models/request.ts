@@ -40,6 +40,8 @@ export interface Request {
   };
   /** Populated by GET /api/requests when a generated type file exists on disk */
   generatedContent?: string;
+  /** Populated by GET /api/requests when a source response snapshot exists on disk */
+  sourceResponseContent?: string;
 }
 
 export interface ExecuteRequestPayload {

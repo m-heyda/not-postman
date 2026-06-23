@@ -8,7 +8,7 @@ import { useRequestStore } from "../request.store";
 
 export function useLoadRequest(requestPath: string | null) {
   const loadFromRequest = useRequestStore((s) => s.loadFromRequest);
-  const setDocsContent = useRequestStore((s) => s.setDocsContent);
+  const setDocsFromDisk = useRequestStore((s) => s.setDocsFromDisk);
 
   const requestQuery = useQuery({
     queryKey: queryKeys.request(requestPath ?? ""),
@@ -37,11 +37,11 @@ export function useLoadRequest(requestPath: string | null) {
 
   useEffect(() => {
     if (docsQuery.data) {
-      setDocsContent(docsQuery.data.content);
+      setDocsFromDisk(docsQuery.data.content);
     } else if (docsQuery.isError) {
-      setDocsContent("");
+      setDocsFromDisk("");
     }
-  }, [docsQuery.data, docsQuery.isError, setDocsContent]);
+  }, [docsQuery.data, docsQuery.isError, setDocsFromDisk]);
 
   return {
     isLoading: requestQuery.isLoading,

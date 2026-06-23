@@ -18,6 +18,10 @@ environments/{envId}.yaml
 
 One YAML file per API endpoint. Folder path serves as implicit category.
 
+## Versioning
+
+Every artifact file includes `version: 1` and a `kind` discriminator (`request`, `collection`, `environment`, or `workspace`). The v1 schema is additive-only: new optional fields may be added, but existing fields keep their meaning. Breaking changes require a new version number and manual file updates. There is no migration tooling — use git to review and revert changes in this local-first workspace.
+
 ---
 
 ## Shared primitives

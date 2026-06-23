@@ -9,9 +9,10 @@ export function DocumentToolbar() {
   const selectedPath = useWorkspaceStore((s) => s.selectedRequestPath);
   const savedRevision = useRequestStore((s) => s.savedRevision);
   const dirtyRevision = useRequestStore((s) => s.dirtyRevision);
+  const isDocsDirty = useRequestStore((s) => s.isDocsDirty);
   const { save, isSaving, canSave } = useSaveRequest();
 
-  const isDirty = dirtyRevision !== savedRevision;
+  const isDirty = dirtyRevision !== savedRevision || isDocsDirty();
 
   const breadcrumb = selectedPath
     ? selectedPath
@@ -57,7 +58,7 @@ export function DocumentToolbar() {
       </div>
       <div className="flex items-center gap-2">
         <Button
-          variant="outline"
+          variant={isDirty ? "default" : "outline"}
           size="sm"
           className="h-7 gap-1.5 text-xs"
           disabled={!canSave || isSaving}

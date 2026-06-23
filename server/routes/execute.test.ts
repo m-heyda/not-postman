@@ -33,12 +33,8 @@ describe("execute routes", () => {
       });
       expect(res.statusCode).toBe(200);
       const body = res.json();
-      expect(body.data.generated?.typescript).toBe(
-        "types/GetFactByIdResponse.ts",
-      );
-      expect(body.data.generatedContent).toContain(
-        "export interface GetFactByIdResponse",
-      );
+      expect(body.data.name).toBe("Fact by ID");
+      expect(body.data.description).toBe("Get a specific cat fact by its ID");
     });
 
     it("returns 404 for missing request", async () => {

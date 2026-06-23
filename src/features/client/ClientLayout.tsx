@@ -6,6 +6,7 @@ import { useWorkspaceData } from "@/features/workspace/hooks/useWorkspaceData";
 import { useEnvironmentData } from "@/features/environment/hooks/useEnvironmentData";
 import { useLoadRequest } from "@/features/request/hooks/useLoadRequest";
 import { useExecuteRequest } from "@/features/request/hooks/useExecuteRequest";
+import { useSaveShortcut } from "@/features/request/hooks/useSaveShortcut";
 import { useWorkspaceStore } from "@/features/workspace/workspace.store";
 import {
   getRequestPathFromHash,
@@ -72,6 +73,7 @@ export function ClientLayout({
 
   const { isFetching: isRequestFetching } = useLoadRequest(selectedRequestPath);
   const executeMutation = useExecuteRequest();
+  useSaveShortcut();
 
   if (isLoading) {
     return (

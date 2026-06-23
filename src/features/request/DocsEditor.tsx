@@ -1,22 +1,33 @@
+import { MarkdownField } from "./MarkdownField";
 import { useRequestStore } from "./request.store";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function DocsEditor() {
   const docsContent = useRequestStore((s) => s.docsContent);
+  const setDocsContent = useRequestStore((s) => s.setDocsContent);
+  const docsPath = useRequestStore((s) => s.docsPath);
+  const sourcePath = useRequestStore((s) => s.sourcePath);
 
-  if (!docsContent) {
-    return (
-      <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-        No documentation available for this request.
-      </div>
-    );
-  }
+  const label =
+    docsPath ??
+    (sourcePath
+      ? `${sourcePath.replace(/\.yaml$/, "").split("/").pop()}.md`
+      : null);
 
   return (
-    <ScrollArea className="h-[400px]">
-      <div className="prose prose-sm dark:prose-invert max-w-none p-4">
-        <pre className="whitespace-pre-wrap text-sm font-sans">{docsContent}</pre>
-      </div>
-    </ScrollArea>
+    <div className="space-y-2">
+      {label && (
+        <p className="text-xs text-muted-foreground">
+          {docsPath ? "Docs file:" : "Docs will be saved to:"}{" "}
+          <span className="font-mono">{label}</span>
+        </p>
+      )}
+      <MarkdownField
+        value={docsContent}
+        onChange={setDocsContent}
+        placeholder="Write request documentation in markdown…"
+        minHeight="280px"
+        emptyPreviewMessage="No documentation yet. Switch to Edit to add content."
+      />
+    </div>
   );
 }
