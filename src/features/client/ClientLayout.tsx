@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Loader2 } from "lucide-react";
 import { Sidebar } from "@/features/workspace/Sidebar";
 import { DocumentPanel } from "./DocumentPanel";
@@ -7,6 +7,10 @@ import { useEnvironmentData } from "@/features/environment/hooks/useEnvironmentD
 import { useLoadRequest } from "@/features/request/hooks/useLoadRequest";
 import { useExecuteRequest } from "@/features/request/hooks/useExecuteRequest";
 import { useWorkspaceStore } from "@/features/workspace/workspace.store";
+import {
+  getRequestPathFromHash,
+  setRequestPathInHash,
+} from "@/lib/routing/hash-state";
 
 interface ClientLayoutProps {
   onNavigateSettings: () => void;
@@ -28,16 +32,43 @@ export function ClientLayout({
     (s) => s.setSelectedRequestPath,
   );
 
+  const initialized = useRef(false);
+
+  // On mount only: restore selection from URL hash or pick default
   useEffect(() => {
-    if (workspace && !selectedRequestPath) {
+    if (!workspace || initialized.current) return;
+    initialized.current = true;
+
+    const hashPath = getRequestPathFromHash();
+    if (hashPath) {
+      setSelectedRequestPath(hashPath);
+    } else {
       const firstCollection = workspace.collections[0];
       if (firstCollection) {
-        setSelectedRequestPath(
-          `${firstCollection.path}/get-random-fact.yaml`,
-        );
+        const defaultPath = `${firstCollection.path}/get-random-fact.yaml`;
+        setSelectedRequestPath(defaultPath);
       }
     }
-  }, [workspace, selectedRequestPath, setSelectedRequestPath]);
+  }, [workspace, setSelectedRequestPath]);
+
+  // Sync selection changes to URL hash (one-way: store → URL)
+  useEffect(() => {
+    if (selectedRequestPath) {
+      setRequestPathInHash(selectedRequestPath);
+    }
+  }, [selectedRequestPath]);
+
+  // Listen for browser back/forward
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hashPath = getRequestPathFromHash();
+      if (hashPath && hashPath !== useWorkspaceStore.getState().selectedRequestPath) {
+        setSelectedRequestPath(hashPath);
+      }
+    };
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, [setSelectedRequestPath]);
 
   const { isFetching: isRequestFetching } = useLoadRequest(selectedRequestPath);
   const executeMutation = useExecuteRequest();

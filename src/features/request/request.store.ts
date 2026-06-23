@@ -48,6 +48,7 @@ interface RequestDraftState {
   isLoading: boolean;
   error: string | null;
   generated: Request["generated"] | null;
+  generatedContent: string | null;
 
   savedRevision: number;
   dirtyRevision: number;
@@ -81,6 +82,8 @@ interface RequestDraftState {
   setResponse: (response: ExecuteResponse | null) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
+  setGeneratedContent: (content: string | null) => void;
+  setGenerated: (generated: Request["generated"] | null) => void;
 
   draftToRequest: () => Request | null;
   markSaved: () => void;
@@ -105,6 +108,7 @@ const INITIAL_STATE = {
   isLoading: false,
   error: null as string | null,
   generated: null as Request["generated"] | null,
+  generatedContent: null as string | null,
   savedRevision: 0,
   dirtyRevision: 0,
 };
@@ -201,6 +205,7 @@ export const useRequestStore = create<RequestDraftState>((set, get) => {
         response: null,
         error: null,
         generated: request.generated ?? null,
+        generatedContent: null,
         savedRevision: rev,
         dirtyRevision: rev,
       });
@@ -252,6 +257,8 @@ export const useRequestStore = create<RequestDraftState>((set, get) => {
     setResponse: (response) => set({ response, error: null }),
     setLoading: (isLoading) => set({ isLoading }),
     setError: (error) => set({ error, response: null }),
+    setGeneratedContent: (content) => set({ generatedContent: content }),
+    setGenerated: (generated) => set({ generated }),
 
     markSaved: () => set((s) => ({ savedRevision: s.dirtyRevision })),
 

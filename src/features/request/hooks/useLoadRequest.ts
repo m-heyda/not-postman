@@ -14,6 +14,9 @@ export function useLoadRequest(requestPath: string | null) {
     queryKey: queryKeys.request(requestPath ?? ""),
     queryFn: () => apiGet<Request>(`/api/requests/${requestPath}`),
     enabled: !!requestPath,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: Infinity,
   });
 
   const docsPath = requestPath?.replace(/\.yaml$/, "") ?? "";
@@ -21,6 +24,9 @@ export function useLoadRequest(requestPath: string | null) {
     queryKey: queryKeys.docs(docsPath),
     queryFn: () => apiGet<DocsResponse>(`/api/docs/${docsPath}`),
     enabled: !!docsPath,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: Infinity,
   });
 
   useEffect(() => {
