@@ -1,42 +1,61 @@
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Pencil } from "lucide-react";
 import { useState } from "react";
 import type {
   CollectionTreeNode,
   CollectionFolderNode,
   CollectionRequestNode,
 } from "@/domain/models/workspace";
+import { Button } from "@/components/ui/button";
 import { MethodBadge } from "./MethodBadge";
 import { cn } from "@/lib/utils";
 
 interface CollectionTreeProps {
   collectionName: string;
+  collectionPath: string;
   nodes: CollectionTreeNode[];
   selectedPath: string | null;
   onSelectRequest: (path: string) => void;
+  onEditCollection: (collectionPath: string) => void;
 }
 
 export function CollectionTree({
   collectionName,
+  collectionPath,
   nodes,
   selectedPath,
   onSelectRequest,
+  onEditCollection,
 }: CollectionTreeProps) {
   const [open, setOpen] = useState(true);
 
   return (
-    <div className="mb-1">
+    <div className="mb-1 group/collection">
       {/* Collection folder header */}
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold hover:bg-accent transition-colors"
-      >
-        {open ? (
-          <ChevronDown className="size-3 shrink-0 text-muted-foreground" />
-        ) : (
-          <ChevronRight className="size-3 shrink-0 text-muted-foreground" />
-        )}
-        <span className="truncate">{collectionName}</span>
-      </button>
+      <div className="flex items-center rounded-md hover:bg-accent transition-colors">
+        <button
+          onClick={() => setOpen(!open)}
+          className="flex flex-1 items-center gap-1.5 px-2 py-1.5 text-xs font-semibold min-w-0"
+        >
+          {open ? (
+            <ChevronDown className="size-3 shrink-0 text-muted-foreground" />
+          ) : (
+            <ChevronRight className="size-3 shrink-0 text-muted-foreground" />
+          )}
+          <span className="truncate">{collectionName}</span>
+        </button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-6 shrink-0 mr-1 opacity-0 group-hover/collection:opacity-100 transition-opacity"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEditCollection(collectionPath);
+          }}
+          title="Edit variables"
+        >
+          <Pencil className="size-3" />
+        </Button>
+      </div>
 
       {open && (
         <div className="ml-2">

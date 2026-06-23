@@ -7,9 +7,10 @@ import { CollectionTree } from "./CollectionTree";
 
 interface SidebarProps {
   onNavigateSettings: () => void;
+  onEditCollection: (collectionPath: string) => void;
 }
 
-export function Sidebar({ onNavigateSettings }: SidebarProps) {
+export function Sidebar({ onNavigateSettings, onEditCollection }: SidebarProps) {
   const workspace = useWorkspaceStore((s) => s.workspace);
   const trees = useWorkspaceStore((s) => s.trees);
   const selectedRequestPath = useWorkspaceStore((s) => s.selectedRequestPath);
@@ -27,7 +28,6 @@ export function Sidebar({ onNavigateSettings }: SidebarProps) {
 
   return (
     <div className="flex h-full w-[280px] shrink-0 flex-col border-r">
-      {/* Workspace header */}
       <div className="flex items-center justify-between px-4 py-3">
         <div className="min-w-0 flex-1">
           <h2 className="text-sm font-semibold truncate">{workspace.name}</h2>
@@ -50,14 +50,12 @@ export function Sidebar({ onNavigateSettings }: SidebarProps) {
 
       <Separator />
 
-      {/* Section label */}
       <div className="px-4 pt-3 pb-1">
         <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
           Collections
         </span>
       </div>
 
-      {/* Tree */}
       <ScrollArea className="flex-1">
         <div className="px-2 pb-4">
           {workspace.collections.map((col) => {
@@ -67,9 +65,11 @@ export function Sidebar({ onNavigateSettings }: SidebarProps) {
               <CollectionTree
                 key={col.path}
                 collectionName={col.name}
+                collectionPath={col.path}
                 nodes={tree}
                 selectedPath={selectedRequestPath}
                 onSelectRequest={setSelectedRequestPath}
+                onEditCollection={onEditCollection}
               />
             );
           })}

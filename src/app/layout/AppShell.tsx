@@ -2,14 +2,28 @@ import { useState } from "react";
 import { ClientLayout } from "@/features/client/ClientLayout";
 import { EnvironmentSettingsPage } from "@/features/environment/EnvironmentSettingsPage";
 
-type Page = "client" | "settings";
+type Page =
+  | { view: "client" }
+  | { view: "settings"; collection?: string };
 
 export function AppShell() {
-  const [page, setPage] = useState<Page>("client");
+  const [page, setPage] = useState<Page>({ view: "client" });
 
-  if (page === "settings") {
-    return <EnvironmentSettingsPage onBack={() => setPage("client")} />;
+  if (page.view === "settings") {
+    return (
+      <EnvironmentSettingsPage
+        onBack={() => setPage({ view: "client" })}
+        initialCollection={page.collection ?? null}
+      />
+    );
   }
 
-  return <ClientLayout onNavigateSettings={() => setPage("settings")} />;
+  return (
+    <ClientLayout
+      onNavigateSettings={() => setPage({ view: "settings" })}
+      onEditCollection={(col) =>
+        setPage({ view: "settings", collection: col })
+      }
+    />
+  );
 }

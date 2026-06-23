@@ -10,9 +10,13 @@ import { useWorkspaceStore } from "@/features/workspace/workspace.store";
 
 interface ClientLayoutProps {
   onNavigateSettings: () => void;
+  onEditCollection: (collectionPath: string) => void;
 }
 
-export function ClientLayout({ onNavigateSettings }: ClientLayoutProps) {
+export function ClientLayout({
+  onNavigateSettings,
+  onEditCollection,
+}: ClientLayoutProps) {
   const { isLoading, isError } = useWorkspaceData();
   useEnvironmentData();
 
@@ -58,7 +62,10 @@ export function ClientLayout({ onNavigateSettings }: ClientLayoutProps) {
 
   return (
     <div className="flex h-screen">
-      <Sidebar onNavigateSettings={onNavigateSettings} />
+      <Sidebar
+        onNavigateSettings={onNavigateSettings}
+        onEditCollection={onEditCollection}
+      />
       <DocumentPanel onSend={() => executeMutation.mutate()} />
     </div>
   );
