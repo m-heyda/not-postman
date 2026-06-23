@@ -7,30 +7,29 @@ import {
 } from "@/components/ui/select";
 import { useEnvironmentStore } from "@/features/environment/environment.store";
 
+const ENVIRONMENTS = [
+  { id: "development", label: "Development" },
+  { id: "staging", label: "Staging" },
+  { id: "production", label: "Production" },
+];
+
 export function EnvironmentSelector() {
-  const environments = useEnvironmentStore((s) => s.environments);
-  const activeEnvironmentId = useEnvironmentStore((s) => s.activeEnvironmentId);
+  const activeEnvironmentId = useEnvironmentStore(
+    (s) => s.activeEnvironmentId,
+  );
   const setActiveEnvironment = useEnvironmentStore(
     (s) => s.setActiveEnvironment,
   );
 
-  if (environments.length === 0) {
-    return (
-      <span className="text-xs text-muted-foreground px-2 py-1 border rounded-md">
-        No environments
-      </span>
-    );
-  }
-
   return (
     <Select value={activeEnvironmentId} onValueChange={setActiveEnvironment}>
-      <SelectTrigger className="w-[160px] text-xs font-medium" size="sm">
+      <SelectTrigger className="w-[150px] text-xs font-medium" size="sm">
         <SelectValue placeholder="Environment" />
       </SelectTrigger>
       <SelectContent>
-        {environments.map((env) => (
+        {ENVIRONMENTS.map((env) => (
           <SelectItem key={env.id} value={env.id} className="text-xs">
-            {env.name}
+            {env.label}
           </SelectItem>
         ))}
       </SelectContent>
