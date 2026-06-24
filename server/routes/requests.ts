@@ -1,8 +1,10 @@
 import type { FastifyInstance } from "fastify";
+import fs from "node:fs/promises";
 import { z } from "zod";
 import { AppError } from "../domain/error.js";
 import { saveRequest } from "../persistence/writer.js";
 import { generateAndSaveTypes } from "../persistence/typegen.js";
+import { assertSafeCollectionsPath } from "../persistence/path-utils.js";
 
 const typeGenSchema = z.object({
   body: z.string(),
@@ -21,6 +23,25 @@ export async function registerRequestRoutes(app: FastifyInstance) {
 
       const saved = await saveRequest(relativePath, request.body);
       return { data: saved };
+    },
+  );
+
+  app.delete<{ Params: { "*": string } }>(
+    "/api/requests/*",
+    async (request) => {
+      const relativePath = request.params["*"];
+      if (!relativePath) {
+        throw new AppError("FILE_NOT_FOUND", "Request path required", 400);
+      }
+
+      const fullPath = assertSafeCollectionsPath(relativePath);
+      try {
+        await fs.unlink(fullPath);
+      } catch {
+        throw new AppError("FILE_NOT_FOUND", "Request file not found", 404);
+      }
+
+      return { data: { deleted: relativePath } };
     },
   );
 

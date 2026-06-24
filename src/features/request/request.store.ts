@@ -18,7 +18,6 @@ import {
 const VAR_PATTERN = /^\{\{(\w+)\}\}(.*)/;
 
 export type EditedSection =
-  | "description"
   | "docs"
   | "params"
   | "path"
@@ -53,7 +52,6 @@ interface RequestDraftState {
   url: string;
   baseUrlVar: string;
   urlPath: string;
-  description: string;
   docsPath: string | null;
   headers: KeyValuePair[];
   query: KeyValuePair[];
@@ -79,8 +77,6 @@ interface RequestDraftState {
   setUrl: (url: string) => void;
   setBaseUrlVar: (baseUrlVar: string) => void;
   setUrlPath: (urlPath: string) => void;
-  setDescription: (description: string) => void;
-
   setQuery: (query: KeyValuePair[]) => void;
   updateQueryRow: (index: number, patch: Partial<KeyValuePair>) => void;
   addQueryRow: () => void;
@@ -99,7 +95,7 @@ interface RequestDraftState {
   setBodyType: (type: Request["body"]["type"]) => void;
   setBodyContent: (content: string) => void;
   setDocsContent: (content: string) => void;
-  setDocsFromDisk: (content: string) => void;
+  setDocsFromDisk: (content: string, legacyDescription?: string) => void;
 
   setResponse: (response: ExecuteResponse | null) => void;
   setLoading: (isLoading: boolean) => void;
@@ -123,7 +119,6 @@ const INITIAL_STATE = {
   url: "",
   baseUrlVar: "",
   urlPath: "",
-  description: "",
   docsPath: null as string | null,
   headers: [{ key: "", value: "", enabled: true }] as KeyValuePair[],
   query: [{ key: "", value: "", enabled: true }] as KeyValuePair[],
@@ -237,7 +232,6 @@ export const useRequestStore = create<RequestDraftState>((set, get) => {
         url: request.url,
         baseUrlVar,
         urlPath,
-        description: request.description ?? "",
         docsPath: request.docs ?? null,
         headers,
         query,
@@ -281,9 +275,6 @@ export const useRequestStore = create<RequestDraftState>((set, get) => {
         ...bumpDirty(state, "url"),
       })),
 
-    setDescription: (description) =>
-      set((s) => ({ description, ...bumpDirty(s, "description") })),
-
     setQuery: (query) => set((s) => ({ query, ...bumpDirty(s, "params") })),
     updateQueryRow: queryActions.update,
     addQueryRow: queryActions.add,
@@ -308,8 +299,14 @@ export const useRequestStore = create<RequestDraftState>((set, get) => {
     setDocsContent: (content) =>
       set((s) => ({ docsContent: content, ...bumpDirty(s, "docs") })),
 
-    setDocsFromDisk: (content) =>
-      set({ docsContent: content, savedDocsContent: content }),
+    setDocsFromDisk: (content, legacyDescription) => {
+      let merged = content;
+      const desc = legacyDescription?.trim();
+      if (desc && !merged.includes(desc)) {
+        merged = merged.trim() ? `${desc}\n\n${merged}` : desc;
+      }
+      set({ docsContent: merged, savedDocsContent: merged });
+    },
 
     setResponse: (response) => set({ response, error: null }),
     setLoading: (isLoading) => set({ isLoading }),
@@ -368,7 +365,6 @@ export const useRequestStore = create<RequestDraftState>((set, get) => {
         kind: "request",
         id: s.requestId,
         name: s.name,
-        ...(s.description.trim() ? { description: s.description } : {}),
         method: s.method,
         url: buildUrl(s.baseUrlVar, s.urlPath),
         headers: stripLockedValues(stripEmpty(s.headers)),
