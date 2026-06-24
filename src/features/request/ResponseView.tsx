@@ -57,43 +57,39 @@ export function ResponseView({ onTypesGenerated }: ResponseViewProps) {
 
       {!isLoading && response && (
         <>
-          <div className="flex items-center gap-4 px-1">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted-foreground">Status:</span>
-              <span
-                className={cn(
-                  "text-xs font-bold",
-                  statusColor(response.status),
-                )}
-              >
-                {response.status} {response.statusText}
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted-foreground">Time:</span>
-              <span className="text-xs font-semibold text-emerald-600">
-                {response.durationMs} ms
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted-foreground">Size:</span>
-              <span className="text-xs font-semibold text-emerald-600">
-                {new Blob([response.body]).size >= 1024
-                  ? `${(new Blob([response.body]).size / 1024).toFixed(1)} KB`
-                  : `${new Blob([response.body]).size} B`}
-              </span>
-            </div>
+          <div className="flex items-center gap-2 px-1 flex-wrap">
+            <span
+              className={cn(
+                "inline-flex items-center rounded border px-1.5 py-0.5 text-[11px] font-semibold tabular-nums",
+                response.status >= 200 && response.status < 300
+                  ? "text-emerald-700 bg-emerald-50/60 border-emerald-200/70"
+                  : response.status >= 400
+                    ? "text-rose-600 bg-rose-50/60 border-rose-200/70"
+                    : "text-amber-600 bg-amber-50/60 border-amber-200/70",
+              )}
+            >
+              {response.status} {response.statusText}
+            </span>
+            <span className="text-[11px] text-muted-foreground tabular-nums">
+              {response.durationMs} ms
+            </span>
+            <span className="text-muted-foreground/40 text-[10px]">·</span>
+            <span className="text-[11px] text-muted-foreground tabular-nums">
+              {new Blob([response.body]).size >= 1024
+                ? `${(new Blob([response.body]).size / 1024).toFixed(1)} KB`
+                : `${new Blob([response.body]).size} B`}
+            </span>
             <div className="ml-auto">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="h-7 gap-1.5 text-xs"
+                className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
                 disabled={!canGenerate || isGenerating}
                 onClick={handleGenerate}
                 title="Generate TypeScript types from this response"
               >
                 <Code2 className="size-3" />
-                {isGenerating ? "Generating..." : "Generate Types"}
+                {isGenerating ? "Generating…" : "Generate Types"}
               </Button>
             </div>
           </div>

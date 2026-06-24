@@ -50,3 +50,8 @@ export async function apiPut<T, B = unknown>(
   });
   return parseResponse<T>(response);
 }
+
+export async function apiDelete<T>(path: string): Promise<T> {
+  const response = await fetch(path, { method: "DELETE" });
+  return parseResponse<T>(response);
+}

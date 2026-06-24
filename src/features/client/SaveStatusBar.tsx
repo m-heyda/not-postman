@@ -30,18 +30,19 @@ export function SaveStatusBar() {
       : "request";
 
   return (
-    <div className="flex items-center justify-between gap-3 border-b bg-amber-500/10 px-6 py-2">
-      <p className="text-xs text-amber-700 dark:text-amber-400">
-        Unsaved changes to {sectionHint}
+    <div className="flex items-center justify-between gap-3 border-b border-border/50 bg-muted/30 px-4 py-1.5">
+      <p className="text-xs text-muted-foreground">
+        Unsaved {sectionHint}
       </p>
       <Button
+        variant="ghost"
         size="sm"
-        className="h-7 gap-1.5 text-xs"
+        className="h-6 gap-1 text-xs"
         disabled={!canSave || isSaving}
         onClick={() => save()}
       >
         <Save className="size-3" />
-        {isSaving ? "Saving..." : "Save"}
+        {isSaving ? "Saving…" : "Save"}
       </Button>
     </div>
   );
