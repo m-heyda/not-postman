@@ -7,7 +7,6 @@ import { PathParamsEditor } from "@/features/request/PathParamsEditor";
 import { HeadersEditor } from "@/features/request/HeadersEditor";
 import { BodyEditor } from "@/features/request/BodyEditor";
 import { DocsEditor } from "@/features/request/DocsEditor";
-import { DescriptionEditor } from "@/features/request/DescriptionEditor";
 import { ResponseView } from "@/features/request/ResponseView";
 import { useRequestStore } from "@/features/request/request.store";
 import { DocumentToolbar } from "./DocumentToolbar";
@@ -66,13 +65,6 @@ export function DocumentPanel({ onSend, isRequestLoading }: DocumentPanelProps) 
           onSend();
           setActiveTab("response");
         }} />
-
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Description
-          </p>
-          <DescriptionEditor />
-        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>

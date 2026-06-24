@@ -4,7 +4,6 @@ import { useRequestStore, type EditedSection } from "@/features/request/request.
 import { useSaveRequest } from "@/features/request/hooks/useSaveRequest";
 
 const SECTION_LABELS: Record<EditedSection, string> = {
-  description: "description",
   docs: "documentation",
   params: "query params",
   path: "path params",

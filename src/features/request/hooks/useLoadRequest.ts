@@ -36,12 +36,20 @@ export function useLoadRequest(requestPath: string | null) {
   }, [requestQuery.data, requestPath, loadFromRequest]);
 
   useEffect(() => {
+    if (!requestQuery.data) return;
+
+    const legacyDescription = requestQuery.data.description;
     if (docsQuery.data) {
-      setDocsFromDisk(docsQuery.data.content);
+      setDocsFromDisk(docsQuery.data.content, legacyDescription);
     } else if (docsQuery.isError) {
-      setDocsFromDisk("");
+      setDocsFromDisk("", legacyDescription);
     }
-  }, [docsQuery.data, docsQuery.isError, setDocsFromDisk]);
+  }, [
+    docsQuery.data,
+    docsQuery.isError,
+    requestQuery.data,
+    setDocsFromDisk,
+  ]);
 
   return {
     isLoading: requestQuery.isLoading,
