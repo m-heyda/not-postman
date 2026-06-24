@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import path from "node:path";
 import yaml from "js-yaml";
 import { requestSchema } from "../../src/domain/schemas/request.schema.js";
 import type { RequestSchema } from "../../src/domain/schemas/request.schema.js";
@@ -79,6 +80,55 @@ export async function loadRequestRaw(
 ): Promise<RequestSchema> {
   const { raw } = await readRequestFile(relativePath);
   return parseAndValidateYaml(raw, relativePath);
+}
+
+export async function loadRequestRawWithGenerated(
+  relativePath: string,
+): Promise<
+  RequestSchema & {
+    generatedContent?: string;
+    sourceResponseContent?: string;
+  }
+> {
+  const request = await loadRequestRaw(relativePath);
+  if (!request.generated) return request;
+
+  const requestFullPath = assertSafeCollectionsPath(relativePath);
+  const requestDir = path.dirname(requestFullPath);
+  let enriched: RequestSchema & {
+    generatedContent?: string;
+    sourceResponseContent?: string;
+  } = { ...request };
+
+  if (request.generated.typescript) {
+    const tsFullPath = path.join(requestDir, request.generated.typescript);
+    try {
+      enriched = {
+        ...enriched,
+        generatedContent: await fs.readFile(tsFullPath, "utf-8"),
+      };
+    } catch {
+      // Type file missing — leave generatedContent unset
+    }
+  }
+
+  if (request.generated.sourceResponse) {
+    const jsonFullPath = path.join(
+      requestDir,
+      request.generated.sourceResponse,
+    );
+    try {
+      const rawJson = await fs.readFile(jsonFullPath, "utf-8");
+      enriched = {
+        ...enriched,
+        sourceResponseContent: JSON.stringify(JSON.parse(rawJson), null, 2),
+      };
+    } catch {
+      // Snapshot missing — leave sourceResponseContent unset
+    }
+  }
+
+  return enriched;
 }
 
 export async function listExampleRequests(): Promise<

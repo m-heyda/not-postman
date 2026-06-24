@@ -75,9 +75,6 @@ function useExecuteRequest() {
 export function RequestWorkspace() {
   const loadFromRequest = useRequestStore((s) => s.loadFromRequest);
   const name = useRequestStore((s) => s.name);
-  const response = useRequestStore((s) => s.response);
-  const isLoading = useRequestStore((s) => s.isLoading);
-  const error = useRequestStore((s) => s.error);
 
   const activeEnvironmentId = useEnvironmentStore(
     (s) => s.activeEnvironmentId,
@@ -116,7 +113,7 @@ export function RequestWorkspace() {
 
   useEffect(() => {
     if (requestQuery.data && name === "") {
-      loadFromRequest(requestQuery.data);
+      loadFromRequest(requestQuery.data, DEFAULT_REQUEST_PATH);
     }
   }, [requestQuery.data, name, loadFromRequest]);
 
@@ -182,11 +179,7 @@ export function RequestWorkspace() {
 
       <section className="space-y-3">
         <h2 className="text-sm font-medium">Response</h2>
-        <ResponsePanel
-          response={response}
-          error={error}
-          isLoading={isLoading}
-        />
+        <ResponsePanel />
       </section>
     </div>
   );

@@ -5,6 +5,7 @@ export const keyValuePairSchema = z.object({
   value: z.string(),
   enabled: z.boolean(),
   description: z.string().optional(),
+  locked: z.boolean().optional(),
 });
 
 export const requestBodySchema = z.object({
@@ -17,6 +18,12 @@ export const requestBodySchema = z.object({
     "multipart",
   ]),
   content: z.string().optional(),
+});
+
+export const generatedSchema = z.object({
+  typescript: z.string(),
+  typeName: z.string(),
+  sourceResponse: z.string().optional(),
 });
 
 export const requestSchema = z.object({
@@ -40,12 +47,7 @@ export const requestSchema = z.object({
   path: z.array(keyValuePairSchema),
   body: requestBodySchema,
   docs: z.string().optional(),
-  meta: z
-    .object({
-      generatedType: z.string().optional(),
-      contractPath: z.string().optional(),
-    })
-    .optional(),
+  generated: generatedSchema.optional(),
 });
 
 export type RequestSchema = z.infer<typeof requestSchema>;

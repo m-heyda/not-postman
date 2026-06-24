@@ -26,6 +26,17 @@ describe("execute routes", () => {
       expect(body.data.method).toBe("GET");
     });
 
+    it("includes generated type content when present", async () => {
+      const res = await app.inject({
+        method: "GET",
+        url: "/api/requests/meowfacts/get-fact-by-id.yaml",
+      });
+      expect(res.statusCode).toBe(200);
+      const body = res.json();
+      expect(body.data.name).toBe("Fact by ID");
+      expect(body.data.description).toBe("Get a specific cat fact by its ID");
+    });
+
     it("returns 404 for missing request", async () => {
       const res = await app.inject({
         method: "GET",

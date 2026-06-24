@@ -38,3 +38,15 @@ export async function apiPost<T, B = unknown>(
   });
   return parseResponse<T>(response);
 }
+
+export async function apiPut<T, B = unknown>(
+  path: string,
+  body: B,
+): Promise<T> {
+  const response = await fetch(path, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return parseResponse<T>(response);
+}

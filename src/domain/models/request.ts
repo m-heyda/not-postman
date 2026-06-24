@@ -12,6 +12,7 @@ export interface KeyValuePair {
   value: string;
   enabled: boolean;
   description?: string;
+  locked?: boolean;
 }
 
 export interface RequestBody {
@@ -32,10 +33,15 @@ export interface Request {
   path: KeyValuePair[];
   body: RequestBody;
   docs?: string;
-  meta?: {
-    generatedType?: string;
-    contractPath?: string;
+  generated?: {
+    typescript: string;
+    typeName: string;
+    sourceResponse?: string;
   };
+  /** Populated by GET /api/requests when a generated type file exists on disk */
+  generatedContent?: string;
+  /** Populated by GET /api/requests when a source response snapshot exists on disk */
+  sourceResponseContent?: string;
 }
 
 export interface ExecuteRequestPayload {

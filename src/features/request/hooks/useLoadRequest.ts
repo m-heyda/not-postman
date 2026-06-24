@@ -8,12 +8,15 @@ import { useRequestStore } from "../request.store";
 
 export function useLoadRequest(requestPath: string | null) {
   const loadFromRequest = useRequestStore((s) => s.loadFromRequest);
-  const setDocsContent = useRequestStore((s) => s.setDocsContent);
+  const setDocsFromDisk = useRequestStore((s) => s.setDocsFromDisk);
 
   const requestQuery = useQuery({
     queryKey: queryKeys.request(requestPath ?? ""),
     queryFn: () => apiGet<Request>(`/api/requests/${requestPath}`),
     enabled: !!requestPath,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: Infinity,
   });
 
   const docsPath = requestPath?.replace(/\.yaml$/, "") ?? "";
@@ -21,21 +24,24 @@ export function useLoadRequest(requestPath: string | null) {
     queryKey: queryKeys.docs(docsPath),
     queryFn: () => apiGet<DocsResponse>(`/api/docs/${docsPath}`),
     enabled: !!docsPath,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: Infinity,
   });
 
   useEffect(() => {
-    if (requestQuery.data) {
-      loadFromRequest(requestQuery.data);
+    if (requestQuery.data && requestPath) {
+      loadFromRequest(requestQuery.data, requestPath);
     }
-  }, [requestQuery.data, loadFromRequest]);
+  }, [requestQuery.data, requestPath, loadFromRequest]);
 
   useEffect(() => {
     if (docsQuery.data) {
-      setDocsContent(docsQuery.data.content);
+      setDocsFromDisk(docsQuery.data.content);
     } else if (docsQuery.isError) {
-      setDocsContent("");
+      setDocsFromDisk("");
     }
-  }, [docsQuery.data, docsQuery.isError, setDocsContent]);
+  }, [docsQuery.data, docsQuery.isError, setDocsFromDisk]);
 
   return {
     isLoading: requestQuery.isLoading,
